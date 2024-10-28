@@ -1,5 +1,6 @@
 import itertools
-
+import sys
+sys.path.append("/Users/atahankaragoz/Documents/GitHub/planopt-hs24/sheet05/pyperplan/src")
 from task import Task
 from search.bdd import *
 

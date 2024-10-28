@@ -9,24 +9,21 @@ class BDDSearch(object):
         self.task = task
         self.fact_to_id = dict()
         for i, f in enumerate(self.task.facts):
-            self.fact_to_id[f] = 2*i
-            self.fact_to_id[f + "PRIME"] = 2*i + 1
-            # TODO switch the order above with the one below and
-            # evaluate the effect in exercise 5.2(b)
-#            self.fact_to_id[f] = i
-#            self.fact_to_id[f + "PRIME"] = i + len(self.task.facts)
-        self.id_to_fact = {i : f for f, i in self.fact_to_id.items()}
+            self.fact_to_id[f] = 2 * i
+            self.fact_to_id[f + "PRIME"] = 2 * i + 1
+            # Uncomment the following two lines and comment out the above two lines for part (b) of Exercise 5.2
+            # self.fact_to_id[f] = i
+            # self.fact_to_id[f + "PRIME"] = i + len(self.task.facts)
+        self.id_to_fact = {i: f for f, i in self.fact_to_id.items()}
         self.transition_relation = self.create_transition_relation()
 
     def state_to_ids(self, state):
-        # result = {self.fact_to_id[fact]: fact in state for fact in self.task.facts}
         result = dict()
         for fact in self.task.facts:
             result[self.fact_to_id[fact]] = fact in state
         return result
 
     def ids_to_state(self, ids):
-        # result = {self.id_to_fact[v] for v, value in ids.items() if value}
         result = set()
         for v, value in ids.items():
             if value:
@@ -50,32 +47,30 @@ class BDDSearch(object):
 
     def create_transition_relation(self):
         t = zero()
+        for op in self.task.operators:
+            op_pre = one()
+            for pre in op.preconditions:
+                op_pre = bdd_intersection(op_pre, self.get_atom_bdd(pre, False))
+            op_add = one()
+            for eff in op.add_effects:
+                op_add = bdd_intersection(op_add, self.get_atom_bdd(eff, True))
+            op_del = one()
+            for eff in op.del_effects:
+                if eff not in op.add_effects:
+                    op_del = bdd_intersection(op_del, bdd_complement(self.get_atom_bdd(eff, True)))
 
-        # TODO add your code for exercise 5.1(a) here.
-
-        # Note that the task is in STRIPS, so the formula for
-        # the transition relation can be simplified to the conjunction
-        # of the following formulas:
-        #   {v | v in op.preconditions}
-        #   {v' | v in op.add_effects}
-        #   {not v' | v in op.del_effects \ op.add_effects}
-        #   {v <-> v' | v in self.task.facts \ op.del_effects \ op.add_effects}
-
-        # To get the BDD representing a fact, use self.get_atom_bdd.
-        # To construct BDDs, use the functions imported from bdd.py.
-        # Have a look at that file to see which functions are available.
-
+            unchanged = one()
+            for fact in self.task.facts:
+                if fact not in op.del_effects and fact not in op.add_effects:
+                    unchanged = bdd_intersection(unchanged, bdd_biimplication(self.get_atom_bdd(fact, False),
+                                                                               self.get_atom_bdd(fact, True)))
+            t = bdd_union(t, bdd_intersection(op_pre, bdd_intersection(op_add, bdd_intersection(op_del, unchanged))))
         return t
 
     def apply_ops(self, reached):
-        b = self.transition_relation
-
-        # TODO add your code for exercise 5.1(a) here.
-
-        # Return a BDD that represents the set of states that can be
-        # reached in one step from the states represented by the BDD
-        # given in the parameter "reached".
-        return b
+        next_states = bdd_forget(bdd_intersection(reached, self.transition_relation), 
+                                 *[self.fact_to_id[f + "PRIME"] for f in self.task.facts])
+        return next_states
 
     def construct_plan(self, reached):
         goal = self.conjunction_to_set(self.task.goals)
@@ -97,14 +92,16 @@ class BDDSearch(object):
         goal = self.conjunction_to_set(self.task.goals)
         reached = [bdd_state(self.state_to_ids(self.task.initial_state))]
 
-        # TODO add your code for exercise 5.1(a) here.
+        step = 0
+        while not bdd_equals(bdd_intersection(goal, reached[-1]), zero()):
+            print_bdd_nodes()
+            next_reached = self.apply_ops(reached[-1])
+            if bdd_equals(next_reached, zero()):
+                return None
+            reached.append(next_reached)
+            step += 1
 
-        # Create new BDDs with self.apply_ops(reached[i]) and append
-        # them to the list "reached" in each step.
-
-        # If you find a plan, return the result of
-        #     self.construct_plan(reached)
-        # otherwise (if the task is unsolvable) return None.
+        return self.construct_plan(reached)
 
 
 def bdd_bfs_solve(task):
@@ -112,5 +109,4 @@ def bdd_bfs_solve(task):
     return search.run()
 
 def print_bdd_nodes():
-    print ("Amount of BDD Nodes {}".format(len(VAR)))
-
+    print("Amount of BDD Nodes: {}".format(len(VAR)))

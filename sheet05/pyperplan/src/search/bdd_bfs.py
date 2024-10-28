@@ -75,6 +75,10 @@ class BDDSearch(object):
 
     def construct_plan(self, reached):
         goal = self.conjunction_to_set(self.task.goals)
+        intersection = bdd_intersection(goal, reached[-1])
+        if intersection is None or bdd_equals(intersection, zero()):  # Check for empty intersection
+            print("No solution found; reached states do not intersect with the goal.")
+            return []
         s_ids = bdd_get_ids_of_arbitrary_state(bdd_intersection(goal, reached[-1]))
         plan = []
         for reached_i in reversed(reached[:-1]):

@@ -1,0 +1,6 @@
+/Users/atahankaragoz/Documents/GitHub/planopt-hs24/sheet10/fast-downward/builds/release/CMakeFiles/translate.dir
+/Users/atahankaragoz/Documents/GitHub/planopt-hs24/sheet10/fast-downward/builds/release/CMakeFiles/edit_cache.dir
+/Users/atahankaragoz/Documents/GitHub/planopt-hs24/sheet10/fast-downward/builds/release/CMakeFiles/rebuild_cache.dir
+/Users/atahankaragoz/Documents/GitHub/planopt-hs24/sheet10/fast-downward/builds/release/search/CMakeFiles/downward.dir
+/Users/atahankaragoz/Documents/GitHub/planopt-hs24/sheet10/fast-downward/builds/release/search/CMakeFiles/edit_cache.dir
+/Users/atahankaragoz/Documents/GitHub/planopt-hs24/sheet10/fast-downward/builds/release/search/CMakeFiles/rebuild_cache.dir
